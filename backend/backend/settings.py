@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     # Custom app
     'accounts.apps.AccountsConfig',
+    'core.apps.CoreConfig',
 ]
 
 
@@ -146,15 +147,15 @@ AUTH_USER_MODEL = 'accounts.User'
 # Django Jazzmin Setting
 
 JAZZMIN_SETTINGS = {
-    "site_title": "BotPanel",
-    "site_header": "BotPanel",
-    "site_brand": "BotPanel",
+    "site_title": "FilmPok Panel",
+    "site_header": "FilmPok Panel",
+    "site_brand": "FilmPok Panel",
     "site_icon": "images/favicon.png",
     # Add your own branding here
     "site_logo": None,
     "welcome_sign": "Welcome to the FilmPok",
     # Copyright on the footer
-    "copyright": "BotPanel",
+    "copyright": "FilmPok",
     "user_avatar": None,
     ############
     # Top Menu #
@@ -162,7 +163,7 @@ JAZZMIN_SETTINGS = {
     # Links to put along the top menu
     "topmenu_links": [
         # Url that gets reversed (Permissions can be added)
-        {"name": "BotPanel", "url": "home", "permissions": ["auth.view_user"]},
+        {"name": "Admin Panel", "url": "home", "permissions": ["auth.view_user"]},
         # model admin to link to (Permissions checked against model)
         {"model": "auth.User"},
     ],
