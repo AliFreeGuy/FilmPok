@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+import uuid
 
 
 
@@ -53,6 +54,7 @@ class SettingModel(models.Model):
 
 
 
+
 class FilesModel(models.Model):
     QUALITY_CHOICES = [
         ('1080p', '1080p'),
@@ -60,31 +62,35 @@ class FilesModel(models.Model):
         ('480p', '480p'),
         ('360p', '360p'),
         ('240p', '240p'),
-        ('144p', '144p'),]
-    
-    channel = models.ForeignKey(ChannelsModel , related_name='files' , on_delete=models.CASCADE)
-    user = models.ForeignKey(User , related_name='files' , on_delete=models.CASCADE)
+        ('144p', '144p'),
+    ]
+
+    SUBTITLE_STATUS_CHOICES = [
+        ('none', 'None'),  
+        ('dubbed', 'Dubbed'),
+        ('subtitled', 'Subtitled'), 
+        ('hardsub', 'Hardsub'),
+    ]
+
+    channel = models.ForeignKey(ChannelsModel, related_name='files', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='files', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     ext = models.CharField(max_length=10)
     quality = models.CharField(max_length=5, choices=QUALITY_CHOICES, blank=True)
-    resolution = models.CharField(max_length=50, blank=True)
-    encoder = models.CharField(max_length=50, blank=True)
-    codex = models.CharField(max_length=10, default='x264')
-    season = models.CharField(max_length=10, blank=True)  
-    episode = models.CharField(max_length=10, blank=True) 
-    type = models.CharField(max_length=50, blank=True)
+    media_type = models.CharField(max_length=50, blank=True)
+    size = models.PositiveBigIntegerField(default=0)
+    duration = models.PositiveBigIntegerField(default=0)
     message_id = models.BigIntegerField()
-    unique_id_hash = models.CharField(max_length=64 , unique=True)
-    unique_url = models.CharField(max_length=64 , unique=True)
-    is_dubbed = models.BooleanField(default=False)
-    is_subtitled = models.BooleanField(default=False)
-    is_hardsub = models.BooleanField(default=False)
+    unique_id_hash = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    unique_url_path = models.CharField(max_length=64, unique=True)
+    subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES, default='none')
+    raw_message = models.JSONField(null=True, blank=True)
     creation = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
-    class Meta :
+    class Meta:
         verbose_name = "Files"
         verbose_name_plural = "Files"
 

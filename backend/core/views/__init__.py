@@ -1,1 +1,1 @@
-from .bot_apiview import SettingAPIView
+from .bot_apiview import SettingAPIView , FileCreateUpdateView
