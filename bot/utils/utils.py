@@ -1,5 +1,4 @@
 import hashlib
-from pyrogram import Client
 from pyrogram.types import Message
 from pyrogram.file_id import FileId
 from typing import Any, Optional, Union
@@ -7,6 +6,9 @@ from pyrogram.raw.types.messages import Messages
 from datetime import datetime
 from pyrogram.types import InlineKeyboardButton , InlineKeyboardMarkup , ReplyKeyboardMarkup , KeyboardButton
 import re
+from pyrogram import filters
+import config
+
 
 
 
@@ -27,6 +29,11 @@ SUBTITLE_STATUS_CHOICES = [
 
 
 
+async def is_admin(_ , cli , msg ):
+    admins  = [int(admin.chat_id) for admin in config.con.setting.admin_users]
+    if msg.from_user.id in admins :return True
+    return False
+is_admin = filters.create(is_admin)
 
 
 
@@ -39,6 +46,9 @@ def file_information_text(file_update , setting):
             """
     return message_text
 
+
+
+
 def file_btn(file_info , setting ):
     unique_id_hash = file_info["unique_id_hash"]
     selected_quality = file_info["quality"]
@@ -48,61 +58,43 @@ def file_btn(file_info , setting ):
     buttons = []
 
     for quality in QUALITY_CHOICES:
-            
             quality_text = f"{'✔️' if quality[0] == selected_quality else ''}{quality[1]}"
-            quality_btn = InlineKeyboardButton(
-                text=quality_text.replace('p' , ''),
-                callback_data=f'quality_{quality[0]}:{unique_id_hash}'
-            )
+            quality_btn = InlineKeyboardButton( text=quality_text.replace('p' , ''),callback_data=f'quality_{quality[0]}:{unique_id_hash}')
             quality_btns.append(quality_btn)
-
 
     for subtitle in SUBTITLE_STATUS_CHOICES:
             subtitle_text = f"{'✔️' if subtitle[0] == selected_subtitle_status else ''} {subtitle[1]}"
-            subtitle_btn = InlineKeyboardButton(
-                text=subtitle_text,
-                callback_data=f'sub_{subtitle[0]}:{unique_id_hash}'
-            )
+            subtitle_btn = InlineKeyboardButton(text=subtitle_text,callback_data=f'sub_{subtitle[0]}:{unique_id_hash}')
             subtitle_btns.append(subtitle_btn)
 
-
-            
-    subtitle_btns.append(InlineKeyboardButton(text='🗂',url=f'{setting.website_url}//admin/core/filesmodel/{file_info.id}/change/'))
+    subtitle_btns.append(InlineKeyboardButton(text='🗂',url=f'{setting.website_url}/admin/core/filesmodel/{file_info.id}/change/'))
     buttons.append(subtitle_btns)
     buttons.append(quality_btns)
     return InlineKeyboardMarkup(buttons)
 
 
-def analyze_text(text):
 
+
+
+
+def analyze_text(text):
     if text :
         duble_pattern = re.compile(r'#دوبله_فارسی|#دوبله\s+فارسی', re.IGNORECASE)
         subtitle_pattern = re.compile(r'#زیرنویس(_چسبیده)?_فارسی', re.IGNORECASE)
         quality_pattern = re.compile(r'\b(1080p|720p|480p|360p|240p|144p)\b', re.IGNORECASE)
         
-        if duble_pattern.search(text):
-            content_type = 'dubbed'
-        elif subtitle_pattern.search(text):
-            content_type = 'hardsub'
-        else:
-            content_type = None  
+        if duble_pattern.search(text): content_type = 'dubbed'
+        elif subtitle_pattern.search(text):content_type = 'hardsub'
+        else:content_type = None  
         
         quality_match = quality_pattern.search(text)
         quality = quality_match.group(0) if quality_match else None
         
-        if quality not in dict(QUALITY_CHOICES):
-            quality = None
-        
-        if content_type not in dict(SUBTITLE_STATUS_CHOICES):
-            content_type = 'none'
-    
+        if quality not in dict(QUALITY_CHOICES):quality = None
+        if content_type not in dict(SUBTITLE_STATUS_CHOICES):content_type = None
         return {'sub' : content_type ,  'quality' : quality}
+    
     return {}
-
-
-
-
-
 
 
 

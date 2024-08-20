@@ -1,6 +1,8 @@
 import requests
 from dotmap import DotMap
 from os import environ as env
+from utils.logger import logger
+
 
 class Connection:
 
@@ -57,7 +59,7 @@ class Connection:
             data_to_send['duration'] = duration
         
         
-        # print(f"Sending data: {data_to_send}")
+        logger.info(f"Sending data: {data_to_send}")
 
         if unique_id_hash and not any([channel_chat_id, user_chat_id, name, quality, media_type, size, message_id, unique_url_path, subtitle_status, raw_message]):
             try:
@@ -69,20 +71,21 @@ class Connection:
                 else:
                     res.raise_for_status()
             except requests.exceptions.HTTPError as http_err:
-                print(f"HTTP error occurred: {http_err}")
+                logger.error(f"HTTP error occurred: {http_err}")
                 return False
             except Exception as err:
-                print(f"Other error occurred: {err}")
+                logger.error(f"Other error occurred: {err}")
                 return False
         else:
             try:
                 res = requests.post(url, headers=self.headers, json=data_to_send)
+                logger.info(f"Reciving data: {data_to_send}")
                 res.raise_for_status()
-
+                
                 return DotMap(res.json())
             except requests.exceptions.HTTPError as http_err:
-                print(f"HTTP error occurred: {http_err}")
+                logger.error(f"HTTP error occurred: {http_err}")
                 return False
             except Exception as err:
-                print(f"Other error occurred: {err}")
+                logger.error(f"Other error occurred: {err}")
                 return False

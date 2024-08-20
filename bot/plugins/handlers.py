@@ -1,12 +1,11 @@
 from pyrogram import Client, filters
 from utils import logger , cache  , utils
-from utils import filters as f
 from config import con
 from pyrogram.errors import MessageNotModified
 
 
 
-@Client.on_message(filters.private &f.is_admin ,group=0 )
+@Client.on_message(filters.private & utils.is_admin ,group=0 )
 async def file_setting_manager(bot, msg):
 
     if not msg.text :
@@ -59,7 +58,7 @@ async def file_setting_manager(bot, msg):
 
 
 
-@Client.on_callback_query( f.is_admin,group=0)
+@Client.on_callback_query( utils.is_admin,group=0)
 async def call_file_setting_manager(bot , call  ):
     setting = con.setting
     status = call.data.split('_')[0]
@@ -84,7 +83,7 @@ async def call_file_setting_manager(bot , call  ):
                                             message_id = call.message.id ,
                                             reply_markup = utils.file_btn(file_data , setting))
             
-        except MessageNotModified  as e :print(e)
+        except MessageNotModified  as e :logger.info(e)
             
            
 
