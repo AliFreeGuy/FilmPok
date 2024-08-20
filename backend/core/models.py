@@ -44,6 +44,7 @@ class ServersModel(models.Model):
 class SettingModel(models.Model):
     admin_bot = models.OneToOneField('BotsModel' , related_name='setting' , on_delete=models.CASCADE)
     website_url = models.CharField(max_length=256 )
+    backup_channel = models.ForeignKey(ChannelsModel , related_name='setting' , on_delete=models.CASCADE , blank=True , null=True)
 
     class Meta :
         verbose_name = "Setting"
@@ -66,24 +67,22 @@ class FilesModel(models.Model):
     ]
 
     SUBTITLE_STATUS_CHOICES = [
-        ('none', 'None'),  
         ('dubbed', 'Dubbed'),
-        ('subtitled', 'Subtitled'), 
+        ('original', 'Original'), 
         ('hardsub', 'Hardsub'),
     ]
 
     channel = models.ForeignKey(ChannelsModel, related_name='files', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='files', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    ext = models.CharField(max_length=10)
     quality = models.CharField(max_length=5, choices=QUALITY_CHOICES, blank=True)
     media_type = models.CharField(max_length=50, blank=True)
     size = models.PositiveBigIntegerField(default=0)
-    duration = models.PositiveBigIntegerField(default=0)
+    duration = models.PositiveBigIntegerField(default=0 )
     message_id = models.BigIntegerField()
-    unique_id_hash = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    unique_id_hash = models.CharField(max_length=64, unique=True)
     unique_url_path = models.CharField(max_length=64, unique=True)
-    subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES, default='none')
+    subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES , null=True , blank=True)
     raw_message = models.JSONField(null=True, blank=True)
     creation = models.DateTimeField(auto_now_add=True)
 

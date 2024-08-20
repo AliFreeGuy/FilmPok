@@ -22,13 +22,10 @@ class Connection:
         else:
             res.raise_for_status()
 
-    def file(self, unique_id_hash=None, channel_chat_id=None, user_chat_id=None, name=None, ext=None, quality=None, 
+    def file(self, unique_id_hash=None, channel_chat_id=None, user_chat_id=None, name=None, quality=None, 
              media_type=None, size=None, message_id=None ,duration=None,unique_url_path=None, subtitle_status=None, 
              raw_message=None):
-        """
-        ارسال اطلاعات فایل به endpoint /api/file/ به صورت POST.
-        اگر فیلدی ارسال نشود، آن فیلد از درخواست حذف می‌شود.
-        """
+ 
         pattern = 'file'
         url = self.link(pattern)
 
@@ -42,8 +39,6 @@ class Connection:
             data_to_send['user_chat_id'] = user_chat_id
         if name is not None:
             data_to_send['name'] = name
-        if ext is not None:
-            data_to_send['ext'] = ext
         if quality is not None:
             data_to_send['quality'] = quality
         if media_type is not None:
@@ -62,9 +57,9 @@ class Connection:
             data_to_send['duration'] = duration
         
         
-        print(f"Sending data: {data_to_send}")
+        # print(f"Sending data: {data_to_send}")
 
-        if unique_id_hash and not any([channel_chat_id, user_chat_id, name, ext, quality, media_type, size, message_id, unique_url_path, subtitle_status, raw_message]):
+        if unique_id_hash and not any([channel_chat_id, user_chat_id, name, quality, media_type, size, message_id, unique_url_path, subtitle_status, raw_message]):
             try:
                 res = requests.delete(url, headers=self.headers, json={'unique_id_hash': unique_id_hash})
                 if res.status_code == 204:
@@ -83,6 +78,7 @@ class Connection:
             try:
                 res = requests.post(url, headers=self.headers, json=data_to_send)
                 res.raise_for_status()
+
                 return DotMap(res.json())
             except requests.exceptions.HTTPError as http_err:
                 print(f"HTTP error occurred: {http_err}")

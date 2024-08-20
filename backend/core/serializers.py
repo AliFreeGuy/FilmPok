@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SettingModel, BotsModel, FilesModel
+from .models import SettingModel, BotsModel, FilesModel ,ChannelsModel
 from accounts.models import User
 import uuid
 
@@ -13,17 +13,39 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+
+class ChannelsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChannelsModel
+        fields = '__all__'
+
+
+
 class SettingSerializer(serializers.ModelSerializer):
     admin_bot = BotsSerializer(read_only=True)
     admin_users = serializers.SerializerMethodField()
+    backup_channels = serializers.SerializerMethodField()
+    backup_channel = serializers.SerializerMethodField()
 
     class Meta:
         model = SettingModel
-        fields = '__all__'
+        fields = ['admin_bot', 'website_url', 'admin_users', 'backup_channels', 'backup_channel']  
 
     def get_admin_users(self, obj):
         admin_users = User.objects.filter(is_admin=True)  
         return UserSerializer(admin_users, many=True).data
+
+    def get_backup_channels(self, obj):
+        backup_channels = ChannelsModel.objects.filter(is_active=True)
+        return ChannelsSerializer(backup_channels, many=True).data
+
+    def get_backup_channel(self, obj):
+        backup_channel = obj.backup_channel
+        if backup_channel:
+            return ChannelsSerializer(backup_channel).data
+        return None
+
+
 
 
 

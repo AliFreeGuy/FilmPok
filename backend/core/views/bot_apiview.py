@@ -41,24 +41,19 @@ class FileCreateUpdateView(APIView):
         except ChannelsModel.DoesNotExist:
             return Response({"error": "Channel not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # جستجوی یوزر با chat_id
         try:
             user = User.objects.get(chat_id=data.get('user_chat_id'))
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # افزودن کانال و یوزر به داده‌های ورودی
         data['channel'] = channel.id
         data['user'] = user.id
 
-        # جستجوی فایل با unique_id_hash
         file_instance = FilesModel.objects.filter(unique_id_hash=data.get('unique_id_hash')).first()
 
-        # اگر فایل وجود داشت، به‌روز رسانی شود
         if file_instance:
             serializer = FilesSerializer(file_instance, data=data, partial=True)
         else:
-            # اگر فایل وجود نداشت، یک فایل جدید ایجاد شود
             serializer = FilesSerializer(data=data)
 
         if serializer.is_valid():

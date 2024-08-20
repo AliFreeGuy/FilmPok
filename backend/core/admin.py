@@ -26,13 +26,9 @@ class ServersAdmin(admin.ModelAdmin):
 
 @admin.register(SettingModel)
 class SettingAdmin(admin.ModelAdmin):
-    list_display = ('admin_bot', 'website_url')
-    search_fields = ('admin_bot__username', 'website_url')
+    list_display = ('admin_bot', 'website_url' , 'backup_channel')
+    search_fields = ('admin_bot__username', 'website_url','backup_channel')
     ordering = ('admin_bot',)
-
-
-
-
 
 
 
@@ -59,7 +55,7 @@ class FilesModelAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': (
-                'name', 'ext', 'quality', 'media_type', 'size' ,'duration',
+                'name',  'quality', 'media_type', 'size' ,'duration',
                 'message_id', 'unique_id_hash', 'unique_url_path',
                 'subtitle_status', 'channel', 'user', 'raw_message', 'creation'
             )
