@@ -47,46 +47,6 @@ async def file_setting_manager(bot, msg):
 
 
 
-        # backup_channel = setting.backup_channel
-        # print(setting)
-        # if backup_channel :
-
-        #     message = await msg.copy(backup_channel.chat_id)
-        #     setting = con.setting
-        #     user_chat_id = msg.from_user.id
-        #     file_ids = await utils.get_file_ids(message)
-        #     unique_id_hash = utils.get_hash(message)
-        #     name = utils.get_name(message)
-        #     mime_type = file_ids.mime_type if file_ids.mime_type else file_ids.file_type
-        #     duration = None
-        #     if file_ids.duration:
-        #         try:
-        #             duration = int(file_ids.duration)
-        #         except ValueError:
-        #             duration = None
-
-
-        #     file_update = con.file(
-        #         channel_chat_id=backup_channel.chat_id,
-        #         user_chat_id=user_chat_id,
-        #         name=name,
-        #         message_id=message.id,
-        #         media_type=mime_type,
-        #         unique_id_hash=unique_id_hash,
-        #         size=file_ids.file_size,
-        #         duration=duration,
-        #         quality=caption_parser.get('quality', None),
-        #         subtitle_status=caption_parser.get('sub', None)
-        #     )
-            
-           
-        #     await msg.reply_text(
-        #                     utils.file_information_text(setting=setting , file_update=file_update) , 
-        #                     quote = True  ,
-        #                     reply_markup = utils.file_btn(file_update , setting ))
-
-            
-        
         
     
 

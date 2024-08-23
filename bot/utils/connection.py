@@ -27,7 +27,7 @@ class Connection:
     def file(self, unique_id_hash=None, channel=None, user_chat_id=None, name=None, quality=None, 
              media_type=None, size=None, duration=None, unique_url_path=None, subtitle_status=None):
 
-        pattern = 'files'  # استفاده از 'files' به عنوان pattern
+        pattern = 'files' 
         url = self.link(pattern)
 
         data_to_send = {}
@@ -71,7 +71,7 @@ class Connection:
 
     @property
     def setting(self):
-        pattern = 'setting'  # استفاده از 'setting' به عنوان pattern
+        pattern = 'setting'  
         res = requests.get(self.link(pattern), headers=self.headers)
         if res.status_code == 200:
             setting_data = res.json()
