@@ -6,7 +6,6 @@ app_name = 'core'
 
 urlpatterns = [
     path('setting/' , views.SettingAPIView.as_view() , name='bot-setting'),
-    path('file/', views.FileCreateUpdateView.as_view(), name='file-create-update'),
-
-
-]
+    path('files/', views.FileCreateOrUpdateAPIView.as_view(), name='file-create-update'),
+    path('save-file-channel/', views.FileChannelAPIView.as_view(), name='save_file_channel'),
+            ]

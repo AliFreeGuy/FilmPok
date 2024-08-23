@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SettingModel, BotsModel, FilesModel ,ChannelsModel
+from .models import SettingModel, BotsModel, FilesModel ,ChannelsModel ,FileChannelModel
 from accounts.models import User
 import uuid
 
@@ -49,22 +49,35 @@ class SettingSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
-class FilesSerializer(serializers.ModelSerializer):
-    unique_url_path = serializers.CharField(required=False, allow_blank=True)
-
+class FilesModelSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(write_only=True)  
     class Meta:
         model = FilesModel
         fields = '__all__'
+        extra_kwargs = {
+            'user': {'write_only': True},
+            'unique_url_path': {'read_only': True}  
+        }
 
-    def save(self, **kwargs):
-        if not self.instance:
-            if not self.validated_data.get('unique_url_path'):
-                self.validated_data['unique_url_path'] = str(uuid.uuid4())
-        else:
-            if 'unique_url_path' in self.validated_data:
-                del self.validated_data['unique_url_path']
-        
-        return super().save(**kwargs)
+    def validate_user(self, value):
+        try:
+            user = User.objects.get(chat_id=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with this chat_id does not exist.")
+        return user
+
+    def create(self, validated_data):
+        validated_data['unique_url_path'] = str(uuid.uuid4())
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+
+
+
+
+class FileChannelModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileChannelModel
+        fields = ['id', 'message_id', 'channel']  # اضافه کردن فیلد 'id'

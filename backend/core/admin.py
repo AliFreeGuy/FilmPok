@@ -1,21 +1,32 @@
 from django.contrib import admin
-from .models import ChannelsModel, ServersModel, SettingModel, FilesModel, BotsModel
-from django.utils.html import format_html
+from .models import ChannelsModel, ServersModel, SettingModel, FilesModel, BotsModel  ,FileChannelModel
 import jdatetime
 
 
+
+@admin.register(FileChannelModel)
+class FileChannelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'message_id', 'channel_name')
+    search_fields = ('message_id', 'channel__name')
+    list_filter = ('channel',)
+    ordering = ('-message_id',)
+    readonly_fields = ('channel_name',)
+
+    def channel_name(self, obj):
+        return obj.channel.name
+    channel_name.short_description = 'Channel Name'
+
 @admin.register(ChannelsModel)
 class ChannelsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'chat_id', 'backup_status','is_active','remaining_messages', 'creation_shamsi')
+    list_display = ('name', 'chat_id', 'is_active', 'creation_shamsi')
     search_fields = ('name', 'chat_id')
-    list_filter = ('backup_status', 'creation','is_active',)
-    readonly_fields = ('creation_shamsi','remaining_messages',)
+    list_filter = ( 'is_active', 'creation')
+    readonly_fields = ('creation_shamsi',)
     ordering = ('-creation',)
 
     def creation_shamsi(self, obj):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
-
 
 @admin.register(ServersModel)
 class ServersAdmin(admin.ModelAdmin):
@@ -30,13 +41,11 @@ class ServersAdmin(admin.ModelAdmin):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
 
-
 @admin.register(SettingModel)
 class SettingAdmin(admin.ModelAdmin):
     list_display = ('admin_bot', 'website_url', 'backup_channel')
-    search_fields = ('admin_bot__username', 'website_url', 'backup_channel')
+    search_fields = ('admin_bot__username', 'website_url', 'backup_channel__name')
     ordering = ('admin_bot',)
-
 
 @admin.register(BotsModel)
 class BotsAdmin(admin.ModelAdmin):
@@ -50,7 +59,6 @@ class BotsAdmin(admin.ModelAdmin):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
 
-
 @admin.register(FilesModel)
 class FilesModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'channel_name', 'user_name', 'quality', 'media_type', 'size', 'duration', 'subtitle_status', 'creation_shamsi')
@@ -63,32 +71,20 @@ class FilesModelAdmin(admin.ModelAdmin):
         (None, {
             'fields': (
                 'name', 'quality', 'media_type', 'size', 'duration',
-                'message_id', 'unique_id_hash', 'unique_url_path',
-                'subtitle_status', 'channel', 'user', 'creation_shamsi'
+                'unique_id_hash', 'unique_url_path', 'subtitle_status',
+                'channel', 'user', 'creation_shamsi'
             )
         }),
     )
 
     def channel_name(self, obj):
-        return obj.channel.name
+        return obj.channel.name if obj.channel else '-'
     channel_name.short_description = 'Channel'
 
     def user_name(self, obj):
-        return f'{obj.user.full_name} ({obj.user.chat_id})'
+        return f'{obj.user.full_name} ({obj.user.chat_id})' if obj.user else '-'
     user_name.short_description = 'User'
 
     def creation_shamsi(self, obj):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
-
-    def has_add_permission(self, request):
-        return True
-
-    def has_change_permission(self, request, obj=None):
-        return True
-
-    def has_delete_permission(self, request, obj=None):
-        return True
-
-    def has_view_permission(self, request, obj=None):
-        return True

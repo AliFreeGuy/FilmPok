@@ -1,15 +1,13 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status, permissions
 from core import serializers, models
+from django.http import JsonResponse
 from accounts.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from core.models import FilesModel, ChannelsModel
 from accounts.models import User
-from core.serializers import FilesSerializer
 
 
 
@@ -27,49 +25,70 @@ class SettingAPIView(APIView):
 
 
 
-
-
-
-
-class FileCreateUpdateView(APIView):
-
-    def post(self, request, *args, **kwargs):
-        data = request.data.copy()  
-
-        try:
-            channel = ChannelsModel.objects.get(chat_id=data.get('channel_chat_id'))
-        except ChannelsModel.DoesNotExist:
-            return Response({"error": "Channel not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            user = User.objects.get(chat_id=data.get('user_chat_id'))
-        except User.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        data['channel'] = channel.id
-        data['user'] = user.id
-
-        file_instance = FilesModel.objects.filter(unique_id_hash=data.get('unique_id_hash')).first()
-
-        if file_instance:
-            serializer = FilesSerializer(file_instance, data=data, partial=True)
-        else:
-            serializer = FilesSerializer(data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, *args, **kwargs):
+class FileCreateOrUpdateAPIView(APIView):
+    def post(self, request):
         unique_id_hash = request.data.get('unique_id_hash')
-
-        if not unique_id_hash:
-            return Response({"error": "unique_id_hash is required."}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             file_instance = FilesModel.objects.get(unique_id_hash=unique_id_hash)
-            file_instance.delete()
-            return Response({"message": "File deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            serializer = serializers.FilesModelSerializer(file_instance, data=request.data, partial=True)
         except FilesModel.DoesNotExist:
-            return Response({"error": "File not found."}, status=status.HTTP_404_NOT_FOUND)
+            serializer = serializers.FilesModelSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK if 'file_instance' in locals() else status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FileChannelAPIView(APIView):
+    def post(self, request):
+        channel_id = request.data.get('channel')
+        message_id = request.data.get('message_id')
+
+        if not channel_id or not message_id:
+            return Response({'error': 'channel and message_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            channel = ChannelsModel.objects.get(id=channel_id)
+        except ChannelsModel.DoesNotExist:
+            return Response({'error': 'Channel not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی وجود نمونه
+        if models.FileChannelModel.objects.filter(message_id=message_id, channel=channel).exists():
+            return Response({'error': 'FileChannelModel instance already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+class FileChannelAPIView(APIView):
+    def post(self, request):
+        chat_id = request.data.get('chat_id')
+        message_id = request.data.get('message_id')
+
+        if not chat_id or not message_id:
+            return Response({'error': 'chat_id and message_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            channel = ChannelsModel.objects.get(chat_id=chat_id)
+        except ChannelsModel.DoesNotExist:
+            return Response({'error': 'Channel with the provided chat_id not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if models.FileChannelModel.objects.filter(message_id=message_id, channel=channel).exists():
+            return Response({'error': 'FileChannelModel instance already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'message_id': message_id,
+            'channel': channel.id  
+        }
+        serializer = serializers.FileChannelModelSerializer(data=data)
+
+        if serializer.is_valid():
+            file_channel_instance = serializer.save()
+            response_data = serializer.data
+            response_data['id'] = file_channel_instance.id
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

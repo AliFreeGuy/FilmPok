@@ -1,12 +1,11 @@
 from django.db import models
 from accounts.models import User
+from django.core.exceptions import ValidationError
 
 
 
 class ChannelsModel(models.Model):
-    backup_status = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    remaining_messages = models.PositiveIntegerField(null=True, blank=True , default=0)
     chat_id = models.BigIntegerField(unique=True)
     name = models.CharField(max_length=28)
     bots = models.ManyToManyField('BotsModel' , related_name='channel' )
@@ -20,6 +19,55 @@ class ChannelsModel(models.Model):
         verbose_name_plural = "Channels"
 
 
+
+class FileChannelModel(models.Model):
+    message_id = models.PositiveIntegerField()
+    channel = models.ForeignKey(ChannelsModel, related_name='filechannel', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('message_id', 'channel')
+
+    def __str__(self) -> str:
+        return f'{str(self.message_id)} - {self.channel}'
+
+
+
+
+
+class FilesModel(models.Model):
+    QUALITY_CHOICES = [
+        ('1080p', '1080p'),
+        ('720p', '720p'),
+        ('480p', '480p'),
+        ('360p', '360p'),
+        ('240p', '240p'),
+        ('144p', '144p'),
+    ]
+
+    SUBTITLE_STATUS_CHOICES = [
+        ('dubbed', 'Dubbed'),
+        ('original', 'Original'),
+        ('hardsub', 'Hardsub'),
+    ]
+
+    channel = models.ManyToManyField(FileChannelModel, related_name='files')
+    user = models.ForeignKey(User, related_name='files', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    quality = models.CharField(max_length=5, choices=QUALITY_CHOICES, blank=True)
+    media_type = models.CharField(max_length=50, blank=True)
+    size = models.PositiveBigIntegerField(default=0)
+    duration = models.PositiveBigIntegerField(default=0 )
+    unique_id_hash = models.CharField(max_length=64, unique=True)
+    unique_url_path = models.CharField(max_length=64, unique=True)
+    subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES , null=True , blank=True)
+    creation = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Files"
+        verbose_name_plural = "Files"
 
 
 class ServersModel(models.Model):
@@ -53,49 +101,6 @@ class SettingModel(models.Model):
     class Meta :
         verbose_name = "Setting"
         verbose_name_plural = "Setting"
-
-
-
-
-
-
-
-class FilesModel(models.Model):
-    QUALITY_CHOICES = [
-        ('1080p', '1080p'),
-        ('720p', '720p'),
-        ('480p', '480p'),
-        ('360p', '360p'),
-        ('240p', '240p'),
-        ('144p', '144p'),
-    ]
-
-    SUBTITLE_STATUS_CHOICES = [
-        ('dubbed', 'Dubbed'),
-        ('original', 'Original'), 
-        ('hardsub', 'Hardsub'),
-    ]
-
-    channel = models.ForeignKey(ChannelsModel, related_name='files', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name='files', on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    quality = models.CharField(max_length=5, choices=QUALITY_CHOICES, blank=True)
-    media_type = models.CharField(max_length=50, blank=True)
-    size = models.PositiveBigIntegerField(default=0)
-    duration = models.PositiveBigIntegerField(default=0 )
-    message_id = models.BigIntegerField()
-    unique_id_hash = models.CharField(max_length=64, unique=True)
-    unique_url_path = models.CharField(max_length=64, unique=True)
-    subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES , null=True , blank=True)
-    creation = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Files"
-        verbose_name_plural = "Files"
-
 
 
 
