@@ -1,13 +1,15 @@
 from django.db import models
 from accounts.models import User
-import uuid
 
 
 
 class ChannelsModel(models.Model):
+    backup_status = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    remaining_messages = models.PositiveIntegerField(null=True, blank=True , default=0)
     chat_id = models.BigIntegerField(unique=True)
     name = models.CharField(max_length=28)
-    is_active = models.BooleanField(default=False)
+    bots = models.ManyToManyField('BotsModel' , related_name='channel' )
     creation = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -45,7 +47,9 @@ class SettingModel(models.Model):
     admin_bot = models.OneToOneField('BotsModel' , related_name='setting' , on_delete=models.CASCADE)
     website_url = models.CharField(max_length=256 )
     backup_channel = models.ForeignKey(ChannelsModel , related_name='setting' , on_delete=models.CASCADE , blank=True , null=True)
-
+    backup_files_chunk = models.PositiveIntegerField(default=25)
+    backup_files_sleep = models.PositiveBigIntegerField(default=5)
+    
     class Meta :
         verbose_name = "Setting"
         verbose_name_plural = "Setting"
@@ -83,7 +87,6 @@ class FilesModel(models.Model):
     unique_id_hash = models.CharField(max_length=64, unique=True)
     unique_url_path = models.CharField(max_length=64, unique=True)
     subtitle_status = models.CharField(max_length=10, choices=SUBTITLE_STATUS_CHOICES , null=True , blank=True)
-    raw_message = models.JSONField(null=True, blank=True)
     creation = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

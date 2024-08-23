@@ -25,8 +25,7 @@ class Connection:
             res.raise_for_status()
 
     def file(self, unique_id_hash=None, channel_chat_id=None, user_chat_id=None, name=None, quality=None, 
-             media_type=None, size=None, message_id=None ,duration=None,unique_url_path=None, subtitle_status=None, 
-             raw_message=None):
+             media_type=None, size=None, message_id=None ,duration=None,unique_url_path=None, subtitle_status=None, ):
  
         pattern = 'file'
         url = self.link(pattern)
@@ -53,15 +52,13 @@ class Connection:
             data_to_send['unique_url_path'] = unique_url_path
         if subtitle_status is not None:
             data_to_send['subtitle_status'] = subtitle_status
-        if raw_message is not None:
-            data_to_send['raw_message'] = raw_message
         if duration is not None :
             data_to_send['duration'] = duration
         
         
         logger.info(f"Sending data: {data_to_send}")
 
-        if unique_id_hash and not any([channel_chat_id, user_chat_id, name, quality, media_type, size, message_id, unique_url_path, subtitle_status, raw_message]):
+        if unique_id_hash and not any([channel_chat_id, user_chat_id, name, quality, media_type, size, message_id, unique_url_path, subtitle_status]):
             try:
                 res = requests.delete(url, headers=self.headers, json={'unique_id_hash': unique_id_hash})
                 if res.status_code == 204:

@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'jazzmin',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_celery_results',
+
 
     # Django built-in apps
     'django.contrib.admin',
@@ -251,3 +253,9 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success",
     },
 }
+
+
+
+PROXY = {"scheme": 'socks5',
+            "hostname": '127.0.0.1',
+            "port": 1080}

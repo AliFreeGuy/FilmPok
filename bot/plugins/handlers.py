@@ -13,7 +13,7 @@ async def file_setting_manager(bot, msg):
         caption_parser = utils.analyze_text(msg.caption)
         setting = con.setting
         backup_channel = setting.backup_channel
-    
+        print(setting)
         if backup_channel :
 
             message = await msg.copy(backup_channel.chat_id)
@@ -37,7 +37,6 @@ async def file_setting_manager(bot, msg):
                 name=name,
                 message_id=message.id,
                 media_type=mime_type,
-                raw_message=repr(message),
                 unique_id_hash=unique_id_hash,
                 size=file_ids.file_size,
                 duration=duration,
