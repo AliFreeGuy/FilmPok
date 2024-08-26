@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import ChannelsModel, ServersModel, SettingModel, FilesModel, BotsModel  ,FileChannelModel
 import jdatetime
+from django.utils import timezone
 
 
 
@@ -16,6 +17,8 @@ class FileChannelAdmin(admin.ModelAdmin):
         return obj.channel.name
     channel_name.short_description = 'Channel Name'
 
+
+
 @admin.register(ChannelsModel)
 class ChannelsAdmin(admin.ModelAdmin):
     list_display = ('name', 'chat_id', 'is_active', 'creation_shamsi')
@@ -28,18 +31,46 @@ class ChannelsAdmin(admin.ModelAdmin):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
 
+
+
+
+
 @admin.register(ServersModel)
 class ServersAdmin(admin.ModelAdmin):
-    list_display = ('ip', 'username', 'allowed_traffic', 'traffic_usage', 'cpu_usage', 'memory_usage', 'disk_usage', 'creation_shamsi')
+    list_display = (
+        'ip', 'username', 'allowed_traffic', 'traffic_usage', 'cpu_usage', 
+        'memory_usage', 'renew_day', 'expiry_shamsi', 
+        'days_until_expiry', 'is_active'
+    )
     search_fields = ('ip', 'username')
-    list_filter = ('creation',)
-    readonly_fields = ('creation_shamsi',)
-    filter_horizontal = ('bots',)
-    ordering = ('-creation',)
+    list_filter = ('is_active', 'expiry')
+    readonly_fields = ('expiry_shamsi', 'days_until_expiry')
+    ordering = ('-expiry',)
 
-    def creation_shamsi(self, obj):
-        return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
-    creation_shamsi.short_description = 'Creation Date'
+    def expiry_shamsi(self, obj):
+        if obj.expiry:
+            expiry_jdatetime = jdatetime.datetime.fromgregorian(datetime=obj.expiry)
+            return expiry_jdatetime.strftime('%Y/%m/%d %H:%M:%S')
+        return '-'
+
+    expiry_shamsi.short_description = 'Expiry Date (Shamsi)'
+
+    def days_until_expiry(self, obj):
+        if obj.expiry:
+            today = timezone.now().date()
+            expiry_date = obj.expiry.date()
+            days_left = (expiry_date - today).days
+            if days_left >= 0:
+                return f'+{days_left} days'
+            else:
+                return f'-{abs(days_left)} days'
+        return '-'
+
+    days_until_expiry.short_description = 'Days Until Expiry'
+
+
+
+
 
 @admin.register(SettingModel)
 class SettingAdmin(admin.ModelAdmin):

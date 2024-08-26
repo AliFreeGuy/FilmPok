@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+import logging.config
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -259,3 +263,63 @@ JAZZMIN_UI_TWEAKS = {
 PROXY = {"scheme": 'socks5',
             "hostname": '127.0.0.1',
             "port": 1080}
+
+
+
+
+
+
+
+
+# Logging config 
+
+LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
+
+if not os.path.exists(os.path.dirname(LOG_FILE_PATH)):
+    os.makedirs(os.path.dirname(LOG_FILE_PATH))
+
+
+LOGGING = {
+    'version': 1,  
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE_PATH,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO', 
+            'propagate': True,
+        },
+        'core': {  
+            'handlers': ['file', 'console'],
+            'level': 'INFO',  
+            'propagate': True,
+        },
+        'celery': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO', 
+            'propagate': True,
+        },
+    },
+}

@@ -1,8 +1,8 @@
 from django.db import models
 from accounts.models import User
 from django.core.exceptions import ValidationError
-
-
+from datetime import timedelta
+from django.utils import timezone
 
 class ChannelsModel(models.Model):
     is_active = models.BooleanField(default=False)
@@ -70,21 +70,32 @@ class FilesModel(models.Model):
         verbose_name_plural = "Files"
 
 
+
 class ServersModel(models.Model):
-    ip = models.CharField(max_length=128 ,unique=True)
+    is_active = models.BooleanField(default=False)
+    ip = models.CharField(max_length=128, unique=True)
     username = models.CharField(max_length=128)
     password = models.CharField(max_length=128)
-    bots = models.ManyToManyField('BotsModel' , related_name='server'  )
+    bots = models.ManyToManyField('BotsModel', related_name='server')
     allowed_traffic = models.PositiveBigIntegerField()
     traffic_usage = models.FloatField(default=0.0)
     cpu_usage = models.FloatField(default=0.0)
     memory_usage = models.FloatField(default=0.0)
-    disk_usage = models.FloatField(default=0.0)
-    creation = models.DateTimeField(auto_now_add=True)
+    renew_day = models.PositiveBigIntegerField(default=30)
+    expiry = models.DateTimeField(null=True , blank=True)
 
-    class Meta :
+    class Meta:
         verbose_name = "Servers"
         verbose_name_plural = "Servers"
+
+    def save(self, *args, **kwargs):
+
+        self.expiry = timezone.now() + timedelta(days=self.renew_day)
+        
+        if self.traffic_usage >= self.allowed_traffic:
+            self.is_active = False
+
+        super().save(*args, **kwargs)
 
 
 
@@ -95,8 +106,6 @@ class SettingModel(models.Model):
     admin_bot = models.OneToOneField('BotsModel' , related_name='setting' , on_delete=models.CASCADE)
     website_url = models.CharField(max_length=256 )
     backup_channel = models.ForeignKey(ChannelsModel , related_name='setting' , on_delete=models.CASCADE , blank=True , null=True)
-    backup_files_chunk = models.PositiveIntegerField(default=25)
-    backup_files_sleep = models.PositiveBigIntegerField(default=5)
     
     class Meta :
         verbose_name = "Setting"
