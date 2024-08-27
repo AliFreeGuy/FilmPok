@@ -73,12 +73,14 @@ class FilesModel(models.Model):
 
 class ServersModel(models.Model):
     is_active = models.BooleanField(default=False)
+    web_url = models.CharField(default='http://127.0.0.0:8000' , max_length=128)
     ip = models.CharField(max_length=128, unique=True)
     username = models.CharField(max_length=128)
     password = models.CharField(max_length=128)
     port = models.PositiveBigIntegerField(default=80)
     user_auth_token = models.CharField(max_length=256 , default='your authentiaction toke user')
     bots = models.ManyToManyField('BotsModel', related_name='server')
+    channels = models.ManyToManyField('ChannelsModel', related_name='server')
     allowed_traffic = models.PositiveBigIntegerField()
     traffic_usage = models.FloatField(default=0.0)
     cpu_usage = models.FloatField(default=0.0)
