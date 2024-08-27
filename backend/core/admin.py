@@ -2,7 +2,11 @@ from django.contrib import admin
 from .models import ChannelsModel, ServersModel, SettingModel, FilesModel, BotsModel  ,FileChannelModel
 import jdatetime
 from django.utils import timezone
-
+from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from .models import ServersModel
 
 
 @admin.register(FileChannelModel)
@@ -30,43 +34,6 @@ class ChannelsAdmin(admin.ModelAdmin):
     def creation_shamsi(self, obj):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
-
-
-
-
-
-@admin.register(ServersModel)
-class ServersAdmin(admin.ModelAdmin):
-    list_display = (
-        'ip', 'username', 'allowed_traffic', 'traffic_usage', 'cpu_usage', 
-        'memory_usage', 'renew_day', 'expiry_shamsi', 
-        'days_until_expiry', 'is_active'
-    )
-    search_fields = ('ip', 'username')
-    list_filter = ('is_active', 'expiry')
-    readonly_fields = ('expiry_shamsi', 'days_until_expiry')
-    ordering = ('-expiry',)
-
-    def expiry_shamsi(self, obj):
-        if obj.expiry:
-            expiry_jdatetime = jdatetime.datetime.fromgregorian(datetime=obj.expiry)
-            return expiry_jdatetime.strftime('%Y/%m/%d %H:%M:%S')
-        return '-'
-
-    expiry_shamsi.short_description = 'Expiry Date (Shamsi)'
-
-    def days_until_expiry(self, obj):
-        if obj.expiry:
-            today = timezone.now().date()
-            expiry_date = obj.expiry.date()
-            days_left = (expiry_date - today).days
-            if days_left >= 0:
-                return f'+{days_left} days'
-            else:
-                return f'-{abs(days_left)} days'
-        return '-'
-
-    days_until_expiry.short_description = 'Days Until Expiry'
 
 
 
@@ -119,3 +86,59 @@ class FilesModelAdmin(admin.ModelAdmin):
     def creation_shamsi(self, obj):
         return jdatetime.datetime.fromgregorian(datetime=obj.creation).strftime('%Y/%m/%d %H:%M:%S')
     creation_shamsi.short_description = 'Creation Date'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@admin.register(ServersModel)
+class ServersAdmin(admin.ModelAdmin):
+    list_display = (
+        'ip', 'username', 'allowed_traffic', 'traffic_usage', 'cpu_usage', 
+        'memory_usage', 'renew_day', 'expiry_shamsi', 
+        'days_until_expiry', 'is_active', 'restart_button'
+    )
+    search_fields = ('ip', 'username')
+    list_filter = ('is_active', 'expiry')
+    readonly_fields = ('expiry_shamsi', 'days_until_expiry')
+    ordering = ('-expiry',)
+
+    def restart_button(self, obj):
+        return format_html(
+            '<a class="button" href="{}">Restart</a>',
+            reverse('core:restart-server', args=[obj.pk])
+        )
+
+    restart_button.short_description = 'Restart'
+    restart_button.allow_tags = True
+
+    def expiry_shamsi(self, obj):
+        if obj.expiry:
+            expiry_jdatetime = jdatetime.datetime.fromgregorian(datetime=obj.expiry)
+            return expiry_jdatetime.strftime('%Y/%m/%d %H:%M:%S')
+        return '-'
+
+    expiry_shamsi.short_description = 'Expiry Date (Shamsi)'
+
+    def days_until_expiry(self, obj):
+        if obj.expiry:
+            today = timezone.now().date()
+            expiry_date = obj.expiry.date()
+            days_left = (expiry_date - today).days
+            if days_left >= 0:
+                return f'+{days_left} days'
+            else:
+                return f'-{abs(days_left)} days'
+        return '-'
+
+    days_until_expiry.short_description = 'Days Until Expiry'

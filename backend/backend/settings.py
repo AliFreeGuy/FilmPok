@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-7bh6(=+cin)osz8ky2_&v%q7f56v3k8hd5p2-5y8thv!gb+zde
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+SITE_URL = 'http://127.0.0.1:8000'
 
 # Application definition
 
@@ -133,6 +133,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # یا هر مسیر دیگری که می‌خواهید
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # فرض کنید فایل‌های استاتیک شما در اینجا قرار دارند
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -271,16 +277,17 @@ PROXY = {"scheme": 'socks5',
 
 
 
-# Logging config 
+import os
 
+# Path for log files
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'django.log')
+CELERY_LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', 'celery.log')
 
 if not os.path.exists(os.path.dirname(LOG_FILE_PATH)):
     os.makedirs(os.path.dirname(LOG_FILE_PATH))
 
-
 LOGGING = {
-    'version': 1,  
+    'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
@@ -304,21 +311,27 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'celery_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': CELERY_LOG_FILE_PATH,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'INFO', 
+            'level': 'INFO',
             'propagate': True,
         },
-        'core': {  
+        'core': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',  
+            'level': 'INFO',
             'propagate': True,
         },
-        'celery': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO', 
+        'tasks': {
+            'handlers': ['celery_file', 'console'],
+            'level': 'INFO',
             'propagate': True,
         },
     },

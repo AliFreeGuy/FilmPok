@@ -76,6 +76,8 @@ class ServersModel(models.Model):
     ip = models.CharField(max_length=128, unique=True)
     username = models.CharField(max_length=128)
     password = models.CharField(max_length=128)
+    port = models.PositiveBigIntegerField(default=80)
+    user_auth_token = models.CharField(max_length=256 , default='your authentiaction toke user')
     bots = models.ManyToManyField('BotsModel', related_name='server')
     allowed_traffic = models.PositiveBigIntegerField()
     traffic_usage = models.FloatField(default=0.0)

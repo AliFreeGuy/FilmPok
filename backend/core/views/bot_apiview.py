@@ -1,14 +1,16 @@
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status, permissions
-from core import serializers, models
-from django.http import JsonResponse
-from accounts.models import User
+from django.urls import reverse
+from core import serializers, models , tasks
+from django.http import  HttpResponseRedirect
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from core.models import FilesModel, ChannelsModel
-from accounts.models import User
 import logging
+from django.views import View
 
 
 logger = logging.getLogger('core')
@@ -178,3 +180,26 @@ class UpdateServerView(APIView):
         }
 
         return Response({"detail": "Server updated successfully.", "updated_data": updated_data}, status=status.HTTP_200_OK)
+
+
+
+
+
+def user_is_superuser(user):
+    return user.is_superuser
+
+@method_decorator(user_passes_test(user_is_superuser), name='dispatch')
+class RestartServerView(View):
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            server = models.ServersModel.objects.filter(pk=pk).first()
+            
+            if server:
+                tasks.server_monitor_runner.delay_on_commit(server.id)
+                logger.info("Server with ID %d restarted successfully.", server.id)
+            else:
+                logger.warning("Server with ID %d not found.", pk)
+        except Exception as e:
+            logger.error("Error restarting server with ID %d: %s", pk, str(e))
+        
+        return HttpResponseRedirect(reverse('admin:core_serversmodel_change', args=[pk]))
